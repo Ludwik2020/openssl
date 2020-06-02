@@ -182,7 +182,7 @@ int main(int argc,char **argv)
 	int r, nid = 0;
 	int pr = 0;
 	char buf[2048], lbuf[2048];
-	unsigned char *randout = NULL;
+	unsigned char randout[2048];
 	char *keyword = NULL, *value = NULL;
 
 	unsigned char *ent = NULL, *nonce = NULL, *pers = NULL, *adin = NULL;
@@ -298,8 +298,6 @@ int main(int argc,char **argv)
 			else
 				exit(1);
 			}
-		if (!strcmp(keyword, "[ReturnedBitsLen"))
-			randoutlen = atoi(value) / 8;
 
 		if (!strcmp(keyword, "EntropyInput"))
 			{
@@ -329,11 +327,7 @@ int main(int argc,char **argv)
 			FIPS_drbg_set_callbacks(dctx, test_entropy, 0, 0,
 							test_nonce, 0);
 			FIPS_drbg_set_app_data(dctx, &t);
-			if (randoutlen == 0)
-				randoutlen = (int)FIPS_drbg_get_blocklength(dctx);
-			if (randout)
-				OPENSSL_free(randout);
-			randout = OPENSSL_malloc(randoutlen);
+			randoutlen = (int)FIPS_drbg_get_blocklength(dctx);
 			r = FIPS_drbg_instantiate(dctx, pers, perslen);
 			if (!r)
 				{
@@ -412,8 +406,6 @@ int main(int argc,char **argv)
 			}
 
 		}
-	if (randout)
-		OPENSSL_free(randout);
 	if (in && in != stdin)
 		fclose(in);
 	if (out && out != stdout)
